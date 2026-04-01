@@ -40,7 +40,16 @@ def main(self_check=False):
     GPSCheck(mav),
     VescCheck(vesc)
     ]) 
-    health.checks()
+    
+    startup_results = health.run_checks()
+    startup_ready = health.is_system_ready(startup_results)
+    startup_parts = []
+    for name, result in startup_results.items():
+        status = result.get("status", "unknown")
+        msg = result.get("message", "")
+        startup_parts.append(f"{name}:{status}" + (f"({msg})" if msg else ""))
+    startup_level = "OK" if startup_ready else "ALERT"
+    print(f"[HEALTH STARTUP {startup_level}] {' | '.join(startup_parts)}")
 
     telemetry = TelemetryService(vesc, avr, mavlink_telemetry)
 
