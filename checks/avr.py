@@ -1,4 +1,4 @@
-from base import ComponentCheck
+from .base import ComponentCheck
 
 class AvrCheck(ComponentCheck):
     name = "Avr"
@@ -7,7 +7,10 @@ class AvrCheck(ComponentCheck):
         self.avr = avr
 
     def check(self):
-        msg = self.avr.get_measurements()
-        if msg: 
-            return {"status": "ok", "critical": True}
-        return {"status": "fail", "message": "No control signal", "critical": True}
+        try:
+            data = self.avr.get_data()
+            if data:
+                return {"status": "ok", "message": "", "critical": False}
+            return {"status": "warning", "message": "No AVR data", "critical": False}
+        except Exception as e:
+            return {"status": "warning", "message": str(e), "critical": False}

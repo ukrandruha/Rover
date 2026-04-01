@@ -1,4 +1,4 @@
-from base import ComponentCheck
+from .base import ComponentCheck
 
 class VescCheck(ComponentCheck):
     name = "Vesc"
@@ -7,8 +7,10 @@ class VescCheck(ComponentCheck):
         self.vesc = vesc
 
     def check(self):
-        msg = self.vesc.get_measurements()
-        if msg: 
-            return {"status": "ok", "critical": True}
-        return {"status": "fail", "message": "No control signal", "critical": True}
-
+        try:
+            data = self.vesc.get_data()
+            if "avg_input_current" in data:
+                return {"status": "ok", "message": "", "critical": True}
+            return {"status": "fail", "message": "No VESC data", "critical": True}
+        except Exception as e:
+            return {"status": "fail", "message": str(e), "critical": True}

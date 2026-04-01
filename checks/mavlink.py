@@ -1,17 +1,20 @@
-
-from base import ComponentCheck
+from .base import ComponentCheck
 
 class MAVLinkCheck(ComponentCheck):
     name = "mavlink"
 
-    def __init__(self, master):
-        self.master = master
+    def __init__(self, mav_service):
+        self.mav_service = mav_service
 
     def check(self):
         try:
-            msg = self.master.recv_match(type='HEARTBEAT', blocking=True, timeout=2)
+            master = getattr(self.mav_service, "master", None)
+            if not master:
+                return {"status": "fail", "message": "No MAVLink connection", "critical": True}
+
+            msg = master.recv_match(type='HEARTBEAT', blocking=False)
             if msg:
-                return {"status": "ok", "critical": True}
+                return {"status": "ok", "message": "", "critical": True}
             else:
                 return {"status": "fail", "message": "No heartbeat", "critical": True}
         except Exception as e:
